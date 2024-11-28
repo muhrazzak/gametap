@@ -110,17 +110,11 @@
         <p id="modal-message">Pemain 1 menang!</p>
         <button onclick="backToIndex()">Kembali ke Beranda</button>
     </div>
-
     <script>
-        // Ambil parameter mode dan limit dari URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode');
-        const limit = parseInt(urlParams.get('limit'));
-        
         let score1 = 0;
         let score2 = 0;
-        let timeLeft = 10;  // Default time jika mode adalah "time"
-        
+        let timeLeft = 10;  // Default waktu untuk mode time
+    
         const scoreDisplay1 = document.getElementById('score-1');
         const scoreDisplay2 = document.getElementById('score-2');
         const timeDisplay = document.getElementById('time-left');
@@ -128,69 +122,86 @@
         const modal = document.getElementById('game-over-modal');
         const modalMessage = document.getElementById('modal-message');
         
-        // Jika mode permainan adalah waktu
+        const player1Area = document.getElementById('player-1');
+        const player2Area = document.getElementById('player-2');
+        
+        // Hitung mundur waktu untuk mode time
         if (mode === 'time') {
             timeLeft = limit;
             gameInfo.textContent = `Waktu Tersisa: ${timeLeft} detik`;
-            
-            // Hitung mundur secara live
+    
             const timer = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
-                    timeDisplay.textContent = timeLeft;  // Update tampilan waktu
+                    timeDisplay.textContent = timeLeft; // Update tampilan waktu
                     gameInfo.textContent = `Waktu Tersisa: ${timeLeft} detik`; // Update info
                 } else {
-                    clearInterval(timer);  // Stop timer
+                    clearInterval(timer); // Stop timer
                     endGame("Waktu Habis!"); // Akhiri permainan
                 }
             }, 1000);
-        } 
-        // Jika mode permainan adalah skor
-        else if (mode === 'score') {
-            gameInfo.textContent = `Batas Skor: ${limit}`;
         }
-
+    
+        // Tambahkan event listener untuk multi-touch dan klik
+        function setupTapHandlers() {
+            // Pemain 1
+            player1Area.addEventListener('mousedown', () => incrementScore(1));
+            player1Area.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Hindari default behavior
+                incrementScore(1, e.touches.length);
+            });
+    
+            // Pemain 2
+            player2Area.addEventListener('mousedown', () => incrementScore(2));
+            player2Area.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Hindari default behavior
+                incrementScore(2, e.touches.length);
+            });
+        }
+    
         // Fungsi untuk menambah skor
-        function incrementScore(player) {
+        function incrementScore(player, touches = 1) {
             if (mode === 'time' && timeLeft > 0) {
                 if (player === 1) {
-                    score1++;
+                    score1 += touches; // Tambah sesuai jumlah sentuhan
                     scoreDisplay1.textContent = score1;
-                    localStorage.setItem('lastScore1', score1);  // Simpan skor terakhir Pemain 1
+                    localStorage.setItem('lastScore1', score1); // Simpan skor terakhir
                 } else if (player === 2) {
-                    score2++;
+                    score2 += touches; // Tambah sesuai jumlah sentuhan
                     scoreDisplay2.textContent = score2;
-                    localStorage.setItem('lastScore2', score2);  // Simpan skor terakhir Pemain 2
+                    localStorage.setItem('lastScore2', score2); // Simpan skor terakhir
                 }
             } else if (mode === 'score') {
                 if (player === 1) {
-                    score1++;
+                    score1 += touches;
                     scoreDisplay1.textContent = score1;
-                    localStorage.setItem('lastScore1', score1);  // Simpan skor terakhir Pemain 1
                     if (score1 >= limit) {
                         endGame("Pemain 1 Menang!");
                     }
                 } else if (player === 2) {
-                    score2++;
+                    score2 += touches;
                     scoreDisplay2.textContent = score2;
-                    localStorage.setItem('lastScore2', score2);  // Simpan skor terakhir Pemain 2
                     if (score2 >= limit) {
                         endGame("Pemain 2 Menang!");
                     }
                 }
             }
         }
-
-        // Fungsi untuk mengakhiri permainan dan menampilkan modal
+    
+        // Fungsi untuk mengakhiri permainan
         function endGame(message) {
             modalMessage.textContent = message;
-            modal.style.display = "block";  // Tampilkan modal
+            modal.style.display = "block"; // Tampilkan modal
         }
-
+    
         // Fungsi untuk kembali ke beranda
         function backToIndex() {
             window.location.href = "index.html";
         }
+    
+        // Jalankan setup handler
+        setupTapHandlers();
     </script>
+    
 </body>
 </html>
